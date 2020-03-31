@@ -4,7 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentActivity;
 
+import android.content.res.Resources;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -15,7 +17,9 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PointOfInterest;
@@ -23,7 +27,7 @@ import com.google.android.gms.maps.model.PointOfInterest;
 import java.util.Locale;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback {
-
+    private static final String TAG = MapsActivity.class.getSimpleName();
     private GoogleMap mMap;
 
     @Override
@@ -51,13 +55,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-7.797, 110.370);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Yogyakarta").snippet("I am here!"));
+        LatLng yogya = new LatLng(-7.797, 110.370);
+        mMap.addMarker(new MarkerOptions().position(yogya).title("Marker in Yogyakarta").snippet("I am here!"));
         float zoom=13;
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney,zoom));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(yogya,zoom));
+
+        GroundOverlayOptions homeOverlay = new GroundOverlayOptions()
+                .image(BitmapDescriptorFactory.fromResource(R.drawable.android))
+                .position(yogya, 100);
+
+        mMap.addGroundOverlay(homeOverlay);
 
         setMapLongClick(mMap);
         setPoiClick(mMap);
+        setMapStyle(mMap);
     }
 
     @Override
@@ -112,6 +123,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 poiMarker.showInfoWindow();
             }
         });
+    }
+
+    private void setMapStyle(GoogleMap map) {
+        try {
+            // Customise the styling of the base map using a JSON object defined
+            // in a raw resource file.
+            boolean success = map.setMapStyle(
+                    MapStyleOptions.loadRawResourceStyle(
+                            this, R.raw.map_style));
+
+            if (!success) {
+                Log.e(TAG, "Style parsing failed.");
+            }
+        } catch (Resources.NotFoundException e) {
+            Log.e(TAG, "Can't find style. Error: ", e);
+        }
     }
 
 }
